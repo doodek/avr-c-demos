@@ -1,0 +1,259 @@
+
+ADC_Serwo_JOY.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000012c  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  00000180  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  00000180  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000001b0  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000020  00000000  00000000  000001ec  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   000005b1  00000000  00000000  0000020c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000522  00000000  00000000  000007bd  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   000001bf  00000000  00000000  00000cdf  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000024  00000000  00000000  00000ea0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    00000318  00000000  00000000  00000ec4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000033  00000000  00000000  000011dc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000010  00000000  00000000  0000120f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
+   2:	19 c0       	rjmp	.+50     	; 0x36 <__bad_interrupt>
+   4:	18 c0       	rjmp	.+48     	; 0x36 <__bad_interrupt>
+   6:	17 c0       	rjmp	.+46     	; 0x36 <__bad_interrupt>
+   8:	16 c0       	rjmp	.+44     	; 0x36 <__bad_interrupt>
+   a:	15 c0       	rjmp	.+42     	; 0x36 <__bad_interrupt>
+   c:	14 c0       	rjmp	.+40     	; 0x36 <__bad_interrupt>
+   e:	13 c0       	rjmp	.+38     	; 0x36 <__bad_interrupt>
+  10:	12 c0       	rjmp	.+36     	; 0x36 <__bad_interrupt>
+  12:	11 c0       	rjmp	.+34     	; 0x36 <__bad_interrupt>
+  14:	10 c0       	rjmp	.+32     	; 0x36 <__bad_interrupt>
+  16:	0f c0       	rjmp	.+30     	; 0x36 <__bad_interrupt>
+  18:	0e c0       	rjmp	.+28     	; 0x36 <__bad_interrupt>
+  1a:	0d c0       	rjmp	.+26     	; 0x36 <__bad_interrupt>
+  1c:	0c c0       	rjmp	.+24     	; 0x36 <__bad_interrupt>
+  1e:	0b c0       	rjmp	.+22     	; 0x36 <__bad_interrupt>
+  20:	0a c0       	rjmp	.+20     	; 0x36 <__bad_interrupt>
+  22:	09 c0       	rjmp	.+18     	; 0x36 <__bad_interrupt>
+  24:	08 c0       	rjmp	.+16     	; 0x36 <__bad_interrupt>
+
+00000026 <__ctors_end>:
+  26:	11 24       	eor	r1, r1
+  28:	1f be       	out	0x3f, r1	; 63
+  2a:	cf e5       	ldi	r28, 0x5F	; 95
+  2c:	d4 e0       	ldi	r29, 0x04	; 4
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	cd bf       	out	0x3d, r28	; 61
+  32:	02 d0       	rcall	.+4      	; 0x38 <main>
+  34:	79 c0       	rjmp	.+242    	; 0x128 <_exit>
+
+00000036 <__bad_interrupt>:
+  36:	e4 cf       	rjmp	.-56     	; 0x0 <__vectors>
+
+00000038 <main>:
+int main(void)
+{	
+	
+	signed int step;
+	
+	ADMUX	|=	(1<<REFS0);	//Reference voltage: AVCC
+  38:	3e 9a       	sbi	0x07, 6	; 7
+	ADCSRA	|=	(1<<ADEN);	//Enable ADC
+  3a:	37 9a       	sbi	0x06, 7	; 6
+	ADCSRA	|=	(1<<ADPS2)	|	(1<<ADPS1)	|	(1<<ADPS0);	//Prescaler 128
+  3c:	86 b1       	in	r24, 0x06	; 6
+  3e:	87 60       	ori	r24, 0x07	; 7
+  40:	86 b9       	out	0x06, r24	; 6
+	
+	
+	//Fast PWM
+	TCCR1B	|=	(1<<WGM13)	|	(1<<WGM12);
+  42:	8e b5       	in	r24, 0x2e	; 46
+  44:	88 61       	ori	r24, 0x18	; 24
+  46:	8e bd       	out	0x2e, r24	; 46
+	TCCR1A	|=	(1<<WGM11);						//ustaw tryb Fast PWM 
+  48:	8f b5       	in	r24, 0x2f	; 47
+  4a:	82 60       	ori	r24, 0x02	; 2
+  4c:	8f bd       	out	0x2f, r24	; 47
+	
+	//PWM period value 19 999 us = 20ms
+	
+	ICR1	= 19999;
+  4e:	8f e1       	ldi	r24, 0x1F	; 31
+  50:	9e e4       	ldi	r25, 0x4E	; 78
+  52:	97 bd       	out	0x27, r25	; 39
+  54:	86 bd       	out	0x26, r24	; 38
+	TCCR1A	|=	(1<<COM1A1) |	(1<<COM1B1);	//Output mode: non-inverting mode
+  56:	8f b5       	in	r24, 0x2f	; 47
+  58:	80 6a       	ori	r24, 0xA0	; 160
+  5a:	8f bd       	out	0x2f, r24	; 47
+	DDRB	|=	(1<<PB1)	|	(1<<PB2);		//Set pins as output
+  5c:	87 b3       	in	r24, 0x17	; 23
+  5e:	86 60       	ori	r24, 0x06	; 6
+  60:	87 bb       	out	0x17, r24	; 23
+	TCCR1B	|=	(1<<CS10);						//Prescaler 1 (enable timer clock)
+  62:	8e b5       	in	r24, 0x2e	; 46
+  64:	81 60       	ori	r24, 0x01	; 1
+  66:	8e bd       	out	0x2e, r24	; 46
+	
+	OCR1A =	SERVO_INIT;							//Set servo position to default val.
+  68:	8c ed       	ldi	r24, 0xDC	; 220
+  6a:	95 e0       	ldi	r25, 0x05	; 5
+  6c:	9b bd       	out	0x2b, r25	; 43
+  6e:	8a bd       	out	0x2a, r24	; 42
+	
+		step = (ADC - 512) / 10;		//The joystick should be near 512 if not moved. 
+										//Step is given by difference between ADC val (0 to 1024) and 512
+		if((OCR1A >= SERVO_MIN) && (OCR1A <= SERVO_MAX))
+		{
+			OCR1A =	OCR1A +	step;			//duty cycle is changed by step (remember, step may be negative)
+  70:	ea e0       	ldi	r30, 0x0A	; 10
+  72:	f0 e0       	ldi	r31, 0x00	; 0
+	
+    while (1) 
+    {
+		
+		
+		ADMUX	|=	(1<<MUX0);			//Chose ADC1 as ADC input channel
+  74:	38 9a       	sbi	0x07, 0	; 7
+		ADCSRA	|=	(1<<ADSC);			//Start a conversion	
+  76:	36 9a       	sbi	0x06, 6	; 6
+		while (ADCSRA	&	(1<<ADSC));	//Wait until the end of the conversion
+  78:	36 99       	sbic	0x06, 6	; 6
+  7a:	fe cf       	rjmp	.-4      	; 0x78 <__SREG__+0x39>
+	
+		step = (ADC - 512) / 10;		//The joystick should be near 512 if not moved. 
+  7c:	84 b1       	in	r24, 0x04	; 4
+  7e:	95 b1       	in	r25, 0x05	; 5
+										//Step is given by difference between ADC val (0 to 1024) and 512
+		if((OCR1A >= SERVO_MIN) && (OCR1A <= SERVO_MAX))
+  80:	2a b5       	in	r18, 0x2a	; 42
+  82:	3b b5       	in	r19, 0x2b	; 43
+  84:	28 35       	cpi	r18, 0x58	; 88
+  86:	32 40       	sbci	r19, 0x02	; 2
+  88:	70 f0       	brcs	.+28     	; 0xa6 <__SREG__+0x67>
+  8a:	2a b5       	in	r18, 0x2a	; 42
+  8c:	3b b5       	in	r19, 0x2b	; 43
+  8e:	25 3c       	cpi	r18, 0xC5	; 197
+  90:	39 40       	sbci	r19, 0x09	; 9
+  92:	48 f4       	brcc	.+18     	; 0xa6 <__SREG__+0x67>
+		{
+			OCR1A =	OCR1A +	step;			//duty cycle is changed by step (remember, step may be negative)
+  94:	2a b5       	in	r18, 0x2a	; 42
+  96:	3b b5       	in	r19, 0x2b	; 43
+  98:	92 50       	subi	r25, 0x02	; 2
+  9a:	bf 01       	movw	r22, r30
+  9c:	25 d0       	rcall	.+74     	; 0xe8 <__udivmodhi4>
+  9e:	26 0f       	add	r18, r22
+  a0:	37 1f       	adc	r19, r23
+  a2:	3b bd       	out	0x2b, r19	; 43
+  a4:	2a bd       	out	0x2a, r18	; 42
+		}
+		
+		
+	
+		ADMUX	&=~	(1<<MUX0);	//Disable ADC1 => choose ADC0
+  a6:	38 98       	cbi	0x07, 0	; 7
+		ADCSRA	|=	(1<<ADSC);	//Start a conversion
+  a8:	36 9a       	sbi	0x06, 6	; 6
+		while (ADCSRA	&	(1<<ADSC));	//Wait till the end of the conversion
+  aa:	36 99       	sbic	0x06, 6	; 6
+  ac:	fe cf       	rjmp	.-4      	; 0xaa <__SREG__+0x6b>
+		
+		//Calculate val of OCR1B, duty cycle, in different method than for OCR1A (this one is more fancy)
+		OCR1B	=	SERVO_MIN + ((SERVO_MAX - SERVO_MIN) * ADC) / 1024UL;	
+  ae:	24 b1       	in	r18, 0x04	; 4
+  b0:	35 b1       	in	r19, 0x05	; 5
+  b2:	ac e6       	ldi	r26, 0x6C	; 108
+  b4:	b7 e0       	ldi	r27, 0x07	; 7
+  b6:	2c d0       	rcall	.+88     	; 0x110 <__umulhisi3>
+  b8:	dc 01       	movw	r26, r24
+  ba:	cb 01       	movw	r24, r22
+  bc:	2a e0       	ldi	r18, 0x0A	; 10
+  be:	b6 95       	lsr	r27
+  c0:	a7 95       	ror	r26
+  c2:	97 95       	ror	r25
+  c4:	87 95       	ror	r24
+  c6:	2a 95       	dec	r18
+  c8:	d1 f7       	brne	.-12     	; 0xbe <__SREG__+0x7f>
+  ca:	bc 01       	movw	r22, r24
+  cc:	68 5a       	subi	r22, 0xA8	; 168
+  ce:	7d 4f       	sbci	r23, 0xFD	; 253
+  d0:	79 bd       	out	0x29, r23	; 41
+  d2:	68 bd       	out	0x28, r22	; 40
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  d4:	8f e3       	ldi	r24, 0x3F	; 63
+  d6:	9d e0       	ldi	r25, 0x0D	; 13
+  d8:	23 e0       	ldi	r18, 0x03	; 3
+  da:	81 50       	subi	r24, 0x01	; 1
+  dc:	90 40       	sbci	r25, 0x00	; 0
+  de:	20 40       	sbci	r18, 0x00	; 0
+  e0:	e1 f7       	brne	.-8      	; 0xda <__SREG__+0x9b>
+  e2:	00 c0       	rjmp	.+0      	; 0xe4 <__SREG__+0xa5>
+  e4:	00 00       	nop
+  e6:	c6 cf       	rjmp	.-116    	; 0x74 <__SREG__+0x35>
+
+000000e8 <__udivmodhi4>:
+  e8:	aa 1b       	sub	r26, r26
+  ea:	bb 1b       	sub	r27, r27
+  ec:	51 e1       	ldi	r21, 0x11	; 17
+  ee:	07 c0       	rjmp	.+14     	; 0xfe <__udivmodhi4_ep>
+
+000000f0 <__udivmodhi4_loop>:
+  f0:	aa 1f       	adc	r26, r26
+  f2:	bb 1f       	adc	r27, r27
+  f4:	a6 17       	cp	r26, r22
+  f6:	b7 07       	cpc	r27, r23
+  f8:	10 f0       	brcs	.+4      	; 0xfe <__udivmodhi4_ep>
+  fa:	a6 1b       	sub	r26, r22
+  fc:	b7 0b       	sbc	r27, r23
+
+000000fe <__udivmodhi4_ep>:
+  fe:	88 1f       	adc	r24, r24
+ 100:	99 1f       	adc	r25, r25
+ 102:	5a 95       	dec	r21
+ 104:	a9 f7       	brne	.-22     	; 0xf0 <__udivmodhi4_loop>
+ 106:	80 95       	com	r24
+ 108:	90 95       	com	r25
+ 10a:	bc 01       	movw	r22, r24
+ 10c:	cd 01       	movw	r24, r26
+ 10e:	08 95       	ret
+
+00000110 <__umulhisi3>:
+ 110:	a2 9f       	mul	r26, r18
+ 112:	b0 01       	movw	r22, r0
+ 114:	b3 9f       	mul	r27, r19
+ 116:	c0 01       	movw	r24, r0
+ 118:	a3 9f       	mul	r26, r19
+ 11a:	01 d0       	rcall	.+2      	; 0x11e <__umulhisi3+0xe>
+ 11c:	b2 9f       	mul	r27, r18
+ 11e:	70 0d       	add	r23, r0
+ 120:	81 1d       	adc	r24, r1
+ 122:	11 24       	eor	r1, r1
+ 124:	91 1d       	adc	r25, r1
+ 126:	08 95       	ret
+
+00000128 <_exit>:
+ 128:	f8 94       	cli
+
+0000012a <__stop_program>:
+ 12a:	ff cf       	rjmp	.-2      	; 0x12a <__stop_program>
