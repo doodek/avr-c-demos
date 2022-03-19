@@ -13,3 +13,7 @@
 *.srec
 *.eep
 *.d
+*.mk
+*.json
+.vscod
+*.tmp
