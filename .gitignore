@@ -1,0 +1,15 @@
+*.hex
+*.lss
+*.o
+*.atsuo
+*.cproj
+*.atsln
+*.vs
+*Makefile
+*.asmproj
+*.xml
+*.elf
+*.map
+*.srec
+*.eep
+*.d
